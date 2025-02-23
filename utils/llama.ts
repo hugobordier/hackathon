@@ -14,6 +14,7 @@ const API_KEY = "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";
 
 async function getLlama3Response(prompt: string): Promise<string> {
   //   console.log("Envoi de la requête à Llama 3...");
+  //   prompt = "n'ecrit que avec de l'ascii et " + prompt;
   try {
     const response: AxiosResponse<Llama3Response> = await axios.post(
       "https://api.groq.com/openai/v1/chat/completions",

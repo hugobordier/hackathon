@@ -2,6 +2,7 @@ import { exec, execSync } from "child_process";
 import parseString from "./utils/parseString";
 import { get } from "http";
 import getLlama3Response from "./utils/llama";
+import toASCII from "./utils/toAscii";
 
 let lastCheckedId: number | null = null;
 let adbShell: any = null;
@@ -24,7 +25,7 @@ const checkForNewMessages = async () => {
     console.log(
       "Le traitement est déjà en cours. Attente de la prochaine boucle."
     );
-    return; // Ne pas lancer un nouveau traitement tant que l'ancien n'est pas terminé
+    return;
   }
 
   if (!adbShell) {
@@ -33,7 +34,7 @@ const checkForNewMessages = async () => {
     return;
   }
 
-  isProcessing = true; // Mettre en verrouillage pour signaler que le traitement est en cours
+  isProcessing = true;
 
   exec(
     "adb shell content query --uri content://sms/inbox --projection _id,address,body,date",
@@ -42,12 +43,12 @@ const checkForNewMessages = async () => {
         console.error(
           `Erreur lors de l'exécution de la commande: ${error.message}`
         );
-        isProcessing = false; // Libérer le verrou en cas d'erreur
+        isProcessing = false;
         return;
       }
       if (stderr) {
         console.error(`Erreur ADB: ${stderr}`);
-        isProcessing = false; // Libérer le verrou en cas d'erreur
+        isProcessing = false;
         return;
       }
 
@@ -70,8 +71,10 @@ const checkForNewMessages = async () => {
           const data = parseString(lastMessage);
           if (data) {
             console.log("Données du message:", data);
-            //const datastr = "repond avec une tres courte reponsea cette question : " + data.body;
-            const res = await getLlama3Response(data.body);
+            const datastr =
+              "repond avec une tres courte reponse cette question : " +
+              data.body;
+            const res = await getLlama3Response(datastr);
             await sendSmsWithAdbWtihPromise(data.address, res);
             lastCheckedId = parseInt(data._id, 10);
           }
@@ -94,8 +97,16 @@ function sendSmsWithAdbWtihPromise(
       execSync(
         `adb shell am start -a android.intent.action.SENDTO -d sms:${phoneNumber}`
       );
-      console.log(message.replace(/ /g, "%s"));
-      const messageToSend = message.replace(/ /g, "%s");
+      console.log(`📞 Appel de l'application SMS pour ${phoneNumber}`);
+      console.log(`Message à envoyer: ${message}`);
+      message = toASCII(message);
+      const messageToSend = message
+        .replace(/ /g, "%s")
+        .replace(/:/g, "")
+        .replace(/'/g, "%s")
+        .replace(/\(/g, ",")
+        .replace(/\)/g, ",");
+      console.log(`Message à envoyer: ${messageToSend}`);
       execSync(`adb shell input text ${messageToSend}`);
       execSync("adb shell input tap 1000 2100");
       execSync("adb shell input tap 1000 1235");
@@ -108,16 +119,20 @@ function sendSmsWithAdbWtihPromise(
   });
 }
 
-// Initialiser adbShell
 initAdbShell();
 
-//Lancer la surveillance des SMS toutes les 5 secondes
 console.log("Surveillance des SMS en cours...");
 setInterval(async () => {
   console.log("checkForNewMessages");
   await checkForNewMessages();
-}, 5000);
+}, 3000);
 
-// await sendSmsWithAdbWtihPromise("+33649905187", "Salut le pote").then(() => {
+// await sendSmsWithAdbWtihPromise("+33649905187", `ééé'`).then(() => {
 //   console.log("SMS envoyé");
+// });
+
+// await getLlama3Response(
+//   "Un%sours%snommé%sBoris%sdécouvrit%sun%spiano%sdans%sla%sforêt%set%sdevint%sun%svirtuose%snocturne."
+// ).then((res) => {
+//   console.log(res);
 // });
