@@ -5,7 +5,7 @@ import getLlama3Response from "./utils/llama";
 
 let lastCheckedId: number | null = null;
 let adbShell: any = null;
-let isProcessing = false; // Verrou pour savoir si la promesse précédente est terminée
+let isProcessing = false;
 
 // Initialiser adbShell
 const initAdbShell = () => {
@@ -70,6 +70,7 @@ const checkForNewMessages = async () => {
           const data = parseString(lastMessage);
           if (data) {
             console.log("Données du message:", data);
+            //const datastr = "repond avec une tres courte reponsea cette question : " + data.body;
             const res = await getLlama3Response(data.body);
             await sendSmsWithAdbWtihPromise(data.address, res);
             lastCheckedId = parseInt(data._id, 10);
@@ -93,7 +94,9 @@ function sendSmsWithAdbWtihPromise(
       execSync(
         `adb shell am start -a android.intent.action.SENDTO -d sms:${phoneNumber}`
       );
-      execSync(`adb shell input text "${message.replace(/ /g, "%s")}"`);
+      console.log(message.replace(/ /g, "%s"));
+      const messageToSend = message.replace(/ /g, "%s");
+      execSync(`adb shell input text ${messageToSend}`);
       execSync("adb shell input tap 1000 2100");
       execSync("adb shell input tap 1000 1235");
       console.log(`📩 SMS envoyé à ${phoneNumber}: "${message}"`);
@@ -108,13 +111,13 @@ function sendSmsWithAdbWtihPromise(
 // Initialiser adbShell
 initAdbShell();
 
-// Lancer la surveillance des SMS toutes les 5 secondes
-// console.log("Surveillance des SMS en cours...");
-// setInterval(async () => {
-//   console.log("checkForNewMessages");
-//   await checkForNewMessages();
-// }, 5000);
+//Lancer la surveillance des SMS toutes les 5 secondes
+console.log("Surveillance des SMS en cours...");
+setInterval(async () => {
+  console.log("checkForNewMessages");
+  await checkForNewMessages();
+}, 5000);
 
-getLlama3Response("Nganda def").then((response) => {
-  console.log("Réponse finale:", response);
-});
+// await sendSmsWithAdbWtihPromise("+33649905187", "Salut le pote").then(() => {
+//   console.log("SMS envoyé");
+// });

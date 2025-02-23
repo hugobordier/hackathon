@@ -12,8 +12,8 @@ interface Llama3Response {
 // Clé API Groq (remplace avec ta clé)
 const API_KEY = "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";
 
-async function getLlama3Response(prompt: string): Promise<string | undefined> {
-  console.log("Envoi de la requête à Llama 3...");
+async function getLlama3Response(prompt: string): Promise<string> {
+  //   console.log("Envoi de la requête à Llama 3...");
   try {
     const response: AxiosResponse<Llama3Response> = await axios.post(
       "https://api.groq.com/openai/v1/chat/completions",
@@ -33,7 +33,6 @@ async function getLlama3Response(prompt: string): Promise<string | undefined> {
     // Retourner la réponse de Llama 3
     const content = response.data.choices[0]?.message.content;
     if (content) {
-      console.log("Réponse de Llama 3 :", content);
       return content;
     } else {
       console.error("Aucun contenu dans la réponse de Llama 3");
@@ -48,7 +47,3 @@ async function getLlama3Response(prompt: string): Promise<string | undefined> {
 }
 
 export default getLlama3Response;
-// Exemple d'utilisation
-getLlama3Response("Nganda def").then((response) => {
-  console.log("Réponse finale:", response);
-});
