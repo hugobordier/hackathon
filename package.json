@@ -1,0 +1,17 @@
+{
+  "name": "hackathonbis",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@types/axios": "^0.14.4",
+    "axios": "^1.7.9",
+    "child_process": "^1.0.2",
+    "http": "^0.0.1-security"
+  }
+}
