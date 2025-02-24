@@ -72,7 +72,7 @@ const checkForNewMessages = async () => {
           if (data) {
             console.log("Données du message:", data);
             const datastr =
-              "repond avec une tres courte reponse cette question : " +
+              "repond avec une tres courte reponse cette question (et sans utilise des caractere autre des des lettre ou des virgules ): " +
               data.body;
             const res = await getLlama3Response(datastr);
             await sendSmsWithAdbWtihPromise(data.address, res);
@@ -81,7 +81,7 @@ const checkForNewMessages = async () => {
         }
       }
 
-      isProcessing = false; // Libérer le verrou après la fin du traitement
+      isProcessing = false;
     }
   );
 };
@@ -108,6 +108,7 @@ function sendSmsWithAdbWtihPromise(
         .replace(/\)/g, ",");
       console.log(`Message à envoyer: ${messageToSend}`);
       execSync(`adb shell input text ${messageToSend}`);
+      //execSync(`adb shell input text ${messageToSend}`);
       execSync("adb shell input tap 1000 2100");
       execSync("adb shell input tap 1000 1235");
       console.log(`📩 SMS envoyé à ${phoneNumber}: "${message}"`);
@@ -125,7 +126,7 @@ console.log("Surveillance des SMS en cours...");
 setInterval(async () => {
   console.log("checkForNewMessages");
   await checkForNewMessages();
-}, 3000);
+}, 1000);
 
 // await sendSmsWithAdbWtihPromise("+33649905187", `ééé'`).then(() => {
 //   console.log("SMS envoyé");
